@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+    mysql:
+        image: mysql:8.0
+        container_name: mysql-bank
+        ports:
+            - "3307:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: rrbank
+        restart: always
+        volumes:
+            - mysql-data:/var/lib/mysql
+        networks:
+            - bank-network
+
+    app:
+        build: .
+        container_name: springbank-proj
+        ports:
+            - "8080:9090"
+        environment:
+            SERVER_PORT: 9090
+            SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rrbank
+            SPRING_DATASOURCE_USERNAME: root
+            SPRING_DATASOURCE_PASSWORD: root
+        volumes:
+            - bankapp:/app
+        networks:
+            - bank-network
+
+networks:
+    bank-network:
+
+volumes:
+    bankapp:
+    mysql-data:
