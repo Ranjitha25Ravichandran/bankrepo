@@ -20,5 +20,14 @@ jobs:
             java-version: '17'
             distribution: temurin
             cache: maven
+      -  name: Start Docker Compose
+         run: docker-compose up -d
+
+      -  name: Wait for MySQL
+         run: |
+            until docker exec mysql-bank mysqladmin ping -uroot -proot; do
+              sleep 5
+            done
+
       -  name: Build and analyze
          run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
