@@ -11,6 +11,25 @@ jobs:
 
       runs-on: ubuntu-latest
 
+      env:
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: root
+        
+      services:
+        mysql:
+          image: mysql:8.0
+          env:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: rrbank
+          ports:
+            - 3306:3306
+          options: >-
+            --health-cmd="mysqladmin ping --silent"
+            --health-interval=10s
+            --health-timeout=5s
+            --health-retries=5
+
+
       steps:
       -  name: Checkout source code
          uses: actions/checkout@v4
@@ -20,14 +39,13 @@ jobs:
             java-version: '17'
             distribution: temurin
             cache: maven
-      -  name: Start Docker Compose
-         run: docker compose up -d
 
       -  name: Wait for MySQL
          run: |
-            until docker exec mysql-bank mysqladmin ping -uroot -proot; do
-              sleep 5
-            done
+          echo "Waiting for MySQL..."
+          until mysqladmin ping -h127.0.0.1 -uroot -proot; do
+            sleep 5
+          done
 
       -  name: Build and analyze
          run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
